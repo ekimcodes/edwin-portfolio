@@ -20,8 +20,8 @@ const ALERT_DIST = 95;
 const MOOD_HOLD = 1000; // min ms a mood sticks before it can change
 const STEP_MS = 480; // walk-cycle leg swap
 const REACTION_MS = 2200;
-const PAW_DIST = 52; // px traveled between paw prints
-const PAW_LIFE = 2400; // ms a paw print lingers before removal
+const PAW_DIST = 22; // px traveled between paw prints
+const PAW_LIFE = 2600; // ms a paw print lingers before removal
 
 type Mood =
   | "sit"
@@ -132,14 +132,9 @@ export default function AsciiCat() {
       const vh = window.innerHeight;
       const cw = size.current.w;
       const ch = size.current.h;
-      const contentLeft = Math.max(8, (vw - CONTENT_WIDTH) / 2);
-      const contentRight = contentLeft + CONTENT_WIDTH;
-      let dx = mouse.current.x - cw / 2;
+      // The cat is allowed to roam anywhere, including across the text column.
+      const dx = mouse.current.x - cw / 2;
       const dy = mouse.current.y - ch / 2;
-      if (dx + cw > contentLeft && dx < contentRight) {
-        dx =
-          mouse.current.x < vw / 2 ? contentLeft - cw - 8 : contentRight + 8;
-      }
       target.current = {
         x: Math.min(Math.max(8, dx), vw - cw - 8),
         y: Math.min(Math.max(8, dy), vh - ch - 8),
@@ -147,10 +142,12 @@ export default function AsciiCat() {
     };
 
     const dropPaw = () => {
-      const px = pos.current.x + size.current.w / 2;
-      const py = pos.current.y + size.current.h - 8;
+      // alternate left/right of the cat's center for a footstep feel
+      const side = pawId.current % 2 === 0 ? -5 : 5;
+      const px = pos.current.x + size.current.w / 2 + side;
+      const py = pos.current.y + size.current.h - 6;
       const id = pawId.current++;
-      setPaws((prev) => [...prev.slice(-9), { id, x: px, y: py }]);
+      setPaws((prev) => [...prev.slice(-13), { id, x: px, y: py }]);
       window.setTimeout(
         () => setPaws((prev) => prev.filter((p) => p.id !== id)),
         PAW_LIFE
@@ -282,12 +279,13 @@ export default function AsciiCat() {
               position: "absolute",
               left: p.x,
               top: p.y,
-              fontSize: 9,
+              fontSize: 11,
+              lineHeight: 1,
               color: "var(--muted)",
               animation: `pawFade ${PAW_LIFE}ms ease-out forwards`,
             }}
           >
-            ·
+            ﹡
           </span>
         ))}
       </div>
@@ -339,7 +337,7 @@ export default function AsciiCat() {
             pointerEvents: "auto",
             transform: flip ? "scaleX(-1)" : "none",
             fontFamily:
-              "var(--font-mono), ui-monospace, SF Mono, Menlo, monospace",
+              "'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', YuGothic, Meiryo, 'MS Gothic', 'Noto Sans JP', 'Noto Sans CJK JP', sans-serif",
           }}
         >
           {POSES[poseKey].join("\n")}
