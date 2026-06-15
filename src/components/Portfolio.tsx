@@ -41,14 +41,14 @@ export default function Portfolio() {
       <div className="text-base min-h-[1.9em]">
         {nameDone && v && (
           <Typewriter
-            text={`you are ${label}`}
+            text={`You are ${label}`}
             speed={48}
             caretAfter={!youDone}
             onDone={() => setYouDone(true)}
             className="muted"
           />
         )}
-        {nameDone && !v && <span className="muted">you are …</span>}
+        {nameDone && !v && <span className="muted">You are …</span>}
       </div>
 
       <hr
@@ -65,26 +65,10 @@ export default function Portfolio() {
           <div className="muted lowercase">currently</div>
           <div className="mt-3">
             <div className={ROW}>
-              <a href="https://app.emanate.ai" target="_blank" rel="noreferrer">
+              <a href="https://emanate.ai/" target="_blank" rel="noreferrer">
                 Emanate
               </a>
               <span>Founding Engineer</span>
-            </div>
-          </div>
-        </section>
-
-        {/* projects */}
-        <section className="mt-12">
-          <div className="muted lowercase">projects</div>
-          <div className="mt-3 space-y-1">
-            {/* TODO(edwin): replace with real projects */}
-            <div className={ROW}>
-              <span>project one</span>
-              <span className="muted">short result / metric</span>
-            </div>
-            <div className={ROW}>
-              <span>project two</span>
-              <span className="muted">short result / metric</span>
             </div>
           </div>
         </section>
@@ -106,11 +90,19 @@ export default function Portfolio() {
 
         {/* footer links */}
         <div className="space-x-2">
-          <a href="#">github</a>
+          <a href="https://github.com/ekimcodes" target="_blank" rel="noreferrer">
+            github
+          </a>
           <span className="muted">·</span>
-          <a href="#">email</a>
+          <a href="mailto:edwinkim0509@gmail.com">email</a>
           <span className="muted">·</span>
-          <a href="#">linkedin</a>
+          <a
+            href="https://www.linkedin.com/in/kedwin"
+            target="_blank"
+            rel="noreferrer"
+          >
+            linkedin
+          </a>
         </div>
 
         {/* visitor line */}
