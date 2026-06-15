@@ -30,7 +30,9 @@ export async function GET() {
           }
         : null
     )
-    .filter(Boolean);
+    .filter(Boolean)
+    // Hide local-dev visitors (no real geolocation).
+    .filter((v) => v && v.city && v.city.toLowerCase() !== "localhost");
 
   return NextResponse.json({ visitors });
 }

@@ -11,6 +11,8 @@ type V = {
   firstSeen: number;
 };
 
+const cap = (s: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
+
 export default function VisitorLog() {
   const [list, setList] = useState<V[] | null>(null);
 
@@ -34,7 +36,7 @@ export default function VisitorLog() {
         return (
           <li key={v.id} className="grid grid-cols-[1fr_auto] gap-x-6">
             <span>
-              {v.adjective} {v.animal}{" "}
+              {cap(v.adjective)} {cap(v.animal)}{" "}
               <span className="muted">· {loc || "somewhere"}</span>
             </span>
             <span className="muted">{relativeTime(v.firstSeen)}</span>

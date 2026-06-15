@@ -15,6 +15,8 @@ type Visitor = {
 
 const ROW = "grid grid-cols-[8rem_1fr] gap-x-6 md:grid-cols-[10rem_1fr]";
 
+const cap = (s: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
+
 export default function Portfolio() {
   const [v, setV] = useState<Visitor | null>(null);
   const [nameDone, setNameDone] = useState(false);
@@ -27,7 +29,7 @@ export default function Portfolio() {
       .catch(() => {});
   }, []);
 
-  const label = v ? `${v.adjective} ${v.animal}` : "";
+  const label = v ? `${cap(v.adjective)} ${cap(v.animal)}` : "";
   const cityLabel = v ? (v.city || "the void").toLowerCase() : "";
   // Sections reveal once the intro typing has settled.
   const revealSections = nameDone;
@@ -76,10 +78,23 @@ export default function Portfolio() {
         {/* previously */}
         <section className="mt-12">
           <div className="muted lowercase">previously</div>
-          <div className="mt-3">
-            Google <span className="muted">·</span> CALI{" "}
-            <span className="muted">·</span> MyFitnessPal{" "}
-            <span className="muted">·</span> UC Berkeley
+          <div className="mt-3 space-y-1">
+            <div className={ROW}>
+              <span>Google</span>
+              <span className="muted">Open Source Developer</span>
+            </div>
+            <div className={ROW}>
+              <span>CALI</span>
+              <span className="muted">Founding Engineer</span>
+            </div>
+            <div className={ROW}>
+              <span>MyFitnessPal</span>
+              <span className="muted">Software Engineer</span>
+            </div>
+            <div className={ROW}>
+              <span>UC Berkeley</span>
+              <span className="muted">Computer Science</span>
+            </div>
           </div>
         </section>
 
