@@ -61,12 +61,3 @@ a:hover {
     opacity: 0;
   }
 }
-
-@keyframes pawFade {
-  from {
-    opacity: 0.7;
-  }
-  to {
-    opacity: 0;
-  }
-}
