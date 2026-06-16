@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { JetBrains_Mono } from "next/font/google";
 import "./globals.css";
-import AsciiCat from "@/components/AsciiCat";
+import PixelCat from "@/components/PixelCat";
 
 const mono = JetBrains_Mono({
   subsets: ["latin"],
@@ -21,7 +21,7 @@ export default function RootLayout({
     <html lang="en" className={mono.variable}>
       <body>
         {children}
-        <AsciiCat />
+        <PixelCat />
       </body>
     </html>
   );
