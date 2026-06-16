@@ -88,9 +88,24 @@ export default function Portfolio() {
               <span className="muted">Founding Engineer</span>
             </div>
             <div className={ROW}>
+              <span>AI Lab</span>
+              <span className="muted">Artificial Intelligence Researcher</span>
+            </div>
+            <div className={ROW}>
               <span>MyFitnessPal</span>
               <span className="muted">Software Engineer</span>
             </div>
+            <div className={ROW}>
+              <span>UC Berkeley</span>
+              <span className="muted">Machine Learning Computational Researcher</span>
+            </div>
+          </div>
+        </section>
+
+        {/* education */}
+        <section className="mt-12">
+          <div className="muted lowercase">education</div>
+          <div className="mt-3 space-y-1">
             <div className={ROW}>
               <span>UC Berkeley</span>
               <span className="muted">Computer Science</span>
