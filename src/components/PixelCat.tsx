@@ -6,7 +6,7 @@ import {
   SPRITE_W,
   SPRITE_H,
   FRAMES,
-  EYE_PIXELS,
+  SIT_BLINK,
   type CatState,
 } from "@/lib/catSprites";
 import {
@@ -16,45 +16,33 @@ import {
   frameForState,
 } from "@/lib/catBehavior";
 
-const SCALE = 4; // px per sprite pixel -> 64x64 on screen
+const SCALE = 3; // px per sprite pixel -> 72x72 on screen
 const SPRITE_PX = SPRITE_W * SCALE;
-const LERP = 0.02; // lazy glide toward target
-const STEP_MS = 200; // walk-frame swap cadence
+const LERP = 0.018; // lazy glide toward target
+const STEP_MS = 180; // hop cadence while walking
 const BLINK_MIN = 2500;
-const PAW_DIST = 26;
+const PAW_DIST = 30;
 const PAW_LIFE = 2600;
 const REACTION_MS = 1800;
 
 type Paw = { id: number; x: number; y: number };
 
 function Sprite({
-  state,
-  frame,
-  blink,
-  flip,
+  grid,
 }: {
-  state: CatState;
-  frame: number;
-  blink: boolean;
-  flip: boolean;
+  grid: readonly string[];
 }) {
-  const frames = FRAMES[state];
-  const grid = frames[frame] ?? frames[0];
-
   const rects = useMemo(() => {
-    const eye = new Set(EYE_PIXELS.map(([r, c]) => `${r},${c}`));
     const out: { x: number; y: number; fill: string }[] = [];
     grid.forEach((row, y) => {
       for (let x = 0; x < row.length; x++) {
-        let ch = row[x];
-        if (ch === ".") continue;
-        if (blink && ch === "G" && eye.has(`${y},${x}`)) ch = "K";
-        const fill = PALETTE[ch];
-        if (fill) out.push({ x, y, fill });
+        const ch = row[x];
+        if (ch === "." || !PALETTE[ch]) continue;
+        out.push({ x, y, fill: PALETTE[ch] });
       }
     });
     return out;
-  }, [grid, blink]);
+  }, [grid]);
 
   return (
     <svg
@@ -62,11 +50,7 @@ function Sprite({
       height={SPRITE_H * SCALE}
       viewBox={`0 0 ${SPRITE_W} ${SPRITE_H}`}
       shapeRendering="crispEdges"
-      style={{
-        imageRendering: "pixelated",
-        transform: flip ? "scaleX(-1)" : "none",
-        display: "block",
-      }}
+      style={{ imageRendering: "pixelated", display: "block" }}
       aria-hidden
     >
       {rects.map((r, i) => (
@@ -80,7 +64,6 @@ export default function PixelCat() {
   const wrapRef = useRef<HTMLDivElement>(null);
   const [state, setState] = useState<CatState>("sit");
   const [frame, setFrame] = useState(0);
-  const [flip, setFlip] = useState(false);
   const [blink, setBlink] = useState(false);
   const [bubble, setBubble] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
@@ -93,6 +76,7 @@ export default function PixelCat() {
   const reactionUntil = useRef(0);
   const lastStep = useRef(0);
   const tick = useRef(0);
+  const hop = useRef(0);
   const lastBlink = useRef(0);
   const lastPaw = useRef({ x: 40, y: 300 });
   const pawId = useRef(0);
@@ -140,15 +124,15 @@ export default function PixelCat() {
       if (reduce) {
         setCatState("sit");
       } else if (inReaction) {
-        // hold the reaction state set in onClick
+        // hold reaction state set in onClick
       } else if (!arrived) {
         setCatState("walk");
         pos.current.x += dx * LERP;
         pos.current.y += dy * LERP;
-        if (Math.abs(dx) > 0.5) setFlip(dx < 0);
         if (now - lastStep.current > STEP_MS) {
           lastStep.current = now;
           tick.current++;
+          hop.current = tick.current % 2 === 0 ? 0 : -3; // little bounce
           setFrame(frameForState(FRAMES.walk.length, tick.current));
         }
         const pd = Math.hypot(
@@ -160,12 +144,12 @@ export default function PixelCat() {
           dropPaw();
         }
       } else if (now >= dwellUntil.current) {
-        // Either start a dwell behavior, or (if already dwelling) wander on.
         if (stateRef.current === "walk") {
           const dwell = pickDwellState();
           setCatState(dwell);
           setFrame(0);
           tick.current = 0;
+          hop.current = 0;
           dwellUntil.current = now + dwellDuration(dwell);
         } else {
           target.current = pickWanderTarget(
@@ -177,7 +161,6 @@ export default function PixelCat() {
           dwellUntil.current = now + 800;
         }
       } else {
-        // Animate multi-frame dwell states (groom).
         const frames = FRAMES[stateRef.current].length;
         if (frames > 1 && now - lastStep.current > STEP_MS * 2) {
           lastStep.current = now;
@@ -193,11 +176,13 @@ export default function PixelCat() {
       ) {
         lastBlink.current = now;
         setBlink(true);
-        window.setTimeout(() => setBlink(false), 140);
+        window.setTimeout(() => setBlink(false), 150);
       }
 
       if (wrapRef.current) {
-        wrapRef.current.style.transform = `translate3d(${pos.current.x}px, ${pos.current.y}px, 0)`;
+        wrapRef.current.style.transform = `translate3d(${pos.current.x}px, ${
+          pos.current.y + hop.current
+        }px, 0)`;
       }
       raf = requestAnimationFrame(loop);
     };
@@ -218,9 +203,14 @@ export default function PixelCat() {
     reactionUntil.current = Date.now() + REACTION_MS;
     window.setTimeout(() => {
       setBubble(null);
-      dwellUntil.current = Date.now(); // let the loop pick the next behavior
+      dwellUntil.current = Date.now();
     }, REACTION_MS);
   };
+
+  // Choose the grid to render: blink swaps idle/sit to the closed-eye frame.
+  const showBlink = blink && (state === "idle" || state === "sit");
+  const frames = FRAMES[state];
+  const grid = showBlink ? SIT_BLINK : frames[frame] ?? frames[0];
 
   return (
     <>
@@ -271,7 +261,7 @@ export default function PixelCat() {
             left: "50%",
             transform: "translateX(-50%)",
             marginBottom: 2,
-            fontSize: 13,
+            fontSize: 14,
             color: PALETTE.P,
             opacity: bubble ? 1 : 0,
             transition: "opacity 150ms ease",
@@ -284,7 +274,7 @@ export default function PixelCat() {
           onClick={onClick}
           style={{ cursor: "pointer", pointerEvents: "auto", width: SPRITE_PX }}
         >
-          <Sprite state={state} frame={frame} blink={blink} flip={flip} />
+          <Sprite grid={grid} />
         </div>
       </div>
     </>
